@@ -25,6 +25,17 @@ void printArray(int arr[], int size);
  */
 void writeSortedResultToFile(char* myID, int arr[], int size);
 
+/**
+ * Split a string into an array of n integers.
+ * 
+ * @param str the string of n integers seperated by spaces
+ * and ending with a new line 
+ * @param n   number of integers within the string
+ * @return Array of n integers that must be freed
+ */
+int *stringToIntArray(char* str, int n);
+
+
 void quickSort(int arr[], int low, int high);
 void merge(char* myID, int depth, int nChild);
 

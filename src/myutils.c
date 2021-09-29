@@ -23,6 +23,32 @@ void writeSortedResultToFile(char* myID, int arr[], int size) {
     writeLineToFile(filepath, line);                // Write data in the write buffer to the file
 }
 
+int *stringToIntArray(char* str, int n) {
+    int *integers = (int*) malloc(sizeof(int) * n);
+    int curInt = 0;
+    int intsCompleted = 0;
+    size_t strLen = strlen(str);
+
+    for (int i = 0; i < strLen; i++) {
+        char curChar = str[i];
+        if (curChar == ' ' || i == strLen - 1) {
+            integers[intsCompleted] = curInt;
+
+            intsCompleted += 1;
+            curInt = 0;
+        } else {
+            curInt *= 10;
+            curInt += atoi(&curChar);
+        }
+    }
+
+    if (intsCompleted != n) {
+        printf("An error has occurred: there were supposed to be %d ints in str but %d were found.", n, intsCompleted);   
+    }
+
+    return integers;
+}
+
 // TODO: Quick Sort or another leaf node sorting algorithm
 void quickSort(int arr[], int low, int high) {
 }

@@ -1,7 +1,6 @@
 #include "myutils.h"
 
 int main(int argc, char *argv[]) {
-
     if (argc < 2) {
         printf("Less number of arguments.\n");
         printf("./master InputFileName\n");
@@ -36,7 +35,18 @@ int main(int argc, char *argv[]) {
         sscanf(line, "%d %d\n", &nData, &depth);
     }
 
-    // TODO: Read degrees of each level
+    // Read degrees of each level
+    int *degrees;
+    if (depth > 0) {
+        if((nread = getLineFromFile(fp, line, len)) != -1) {            // Read next line and write it to line buffer
+           degrees = stringToIntArray(line, depth);
+        } else {
+            // TODO: handle failure
+        }
+    } else {
+        // if depth is 0 there will be an empty line that needs to be consumed.
+        getLineFromFile(fp, line, len);
+    }
 
     // Read input data
     int * input = (int *)malloc(sizeof(int) * nData);
@@ -47,8 +57,17 @@ int main(int argc, char *argv[]) {
         input[idxInput++] = aNumber;
     }
 
+    for (int i = 0; i < nData; i++) {
+        printf("%d ", input[i]);
+    }
+    printf("\n");
+
     free(line);
     fclose(fp);
+
+    /*
+     * Each process is assigned floor(nData/degrees[current_depth])
+     */
 
     // TODO: Spawn child processes and launch childProgram if necessary
 
@@ -58,6 +77,7 @@ int main(int argc, char *argv[]) {
 
 
     free(input);
+    free(degrees);
 
     return EXIT_SUCCESS;
 }
