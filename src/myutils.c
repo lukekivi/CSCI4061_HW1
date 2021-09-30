@@ -43,7 +43,11 @@ int *stringToIntArray(char* str, int n) {
     }
 
     if (intsCompleted != n) {
-        printf("An error has occurred: there were supposed to be %d ints in str but %d were found.", n, intsCompleted);   
+        printf("An error has occurred: there were supposed to be %d ints in str but %d were found.\n", n, intsCompleted);   
+        integers = NULL;
+    } else if (intsCompleted == 0) {
+        printf("The string provided was of an invalid format or did not contain any integers.\n");
+        integers = NULL;
     }
 
     return integers;
