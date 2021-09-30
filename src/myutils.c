@@ -49,8 +49,33 @@ int *stringToIntArray(char* str, int n) {
     return integers;
 }
 
-// TODO: Quick Sort or another leaf node sorting algorithm
 void quickSort(int arr[], int low, int high) {
+    void quickSort(int arr[], int low, int high) {
+  if (low >= high) {
+    return;
+  }
+  int pivot = arr[high];
+  int temp;
+  int i = low-1;
+
+  for (int j = low; j < high; j++) {
+    if (arr[j] <= pivot)
+    {
+      i++;
+
+      temp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = temp;
+    }
+  }
+
+  temp = arr[i+1];
+  arr[i+1] = arr[end];
+  arr[end] = temp;
+
+  quicksort(arr, low, i);
+  quicksort(arr, (i+2), high);
+}
 }
 
 
