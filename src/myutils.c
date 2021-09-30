@@ -50,7 +50,6 @@ int *stringToIntArray(char* str, int n) {
 }
 
 void quickSort(int arr[], int low, int high) {
-    void quickSort(int arr[], int low, int high) {
   if (low >= high) {
     return;
   }
@@ -70,12 +69,11 @@ void quickSort(int arr[], int low, int high) {
   }
 
   temp = arr[i+1];
-  arr[i+1] = arr[end];
-  arr[end] = temp;
+  arr[i+1] = arr[high];
+  arr[high] = temp;
 
   quicksort(arr, low, i);
   quicksort(arr, (i+2), high);
-}
 }
 
 
