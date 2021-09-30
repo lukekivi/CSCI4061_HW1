@@ -1,9 +1,10 @@
 CC=gcc
-CFLAGS=-g
+CFLAGS=-g 
 
 SRCDIR=src
 INCLDIR=include
 LIBDIR=lib
+TESTDIR=test
 
 master: $(SRCDIR)/master.c $(LIBDIR)/utils.o $(LIBDIR)/myutils.o childProgram
 	$(CC) $(CFLAGS) -I$(INCLDIR) $(SRCDIR)/master.c $(LIBDIR)/utils.o $(LIBDIR)/myutils.o -o master
@@ -43,7 +44,32 @@ run8:
 run9:
 	./master input9.file
 
+fresh: clean cleanTests
+
 clean:
 	rm lib/myutils.o master childProgram
 	rm -rf output
 	rm -rf *.dSYM
+
+tests: testMyutils
+
+testMyutils: test1 test2 test3
+
+test1: $(TESTDIR)/testsExe/myutils_tests
+	$(TESTDIR)/testsExe/myutils_tests < $(TESTDIR)/input/i1.file > $(TESTDIR)/actual/a1.file
+	diff $(TESTDIR)/expected/e1.file $(TESTDIR)/actual/a1.file
+
+test2: $(TESTDIR)/testsExe/myutils_tests
+	$(TESTDIR)/testsExe/myutils_tests < $(TESTDIR)/input/i2.file > $(TESTDIR)/actual/a2.file
+	diff $(TESTDIR)/expected/e2.file $(TESTDIR)/actual/a2.file
+
+test3: $(TESTDIR)/testsExe/myutils_tests
+	$(TESTDIR)/testsExe/myutils_tests < $(TESTDIR)/input/i3.file > $(TESTDIR)/actual/a3.file
+	diff $(TESTDIR)/expected/e3.file $(TESTDIR)/actual/a3.file
+
+$(TESTDIR)/testsExe/myutils_tests: $(TESTDIR)/testsSrc/myutils_tests.c $(LIBDIR)/utils.o $(LIBDIR)/myutils.o
+	$(CC) $(CFLAGS) -I$(INCLDIR) $(TESTDIR)/testsSrc/myutils_tests.c $(LIBDIR)/utils.o $(LIBDIR)/myutils.o -o $(TESTDIR)/testsExe/myutils_tests
+
+cleanTests:
+	rm $(TESTDIR)/actual/*.file
+	rm $(TESTDIR)/testsExe/myutils_tests
