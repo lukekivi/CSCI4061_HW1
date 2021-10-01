@@ -62,11 +62,6 @@ int main(int argc, char *argv[]) {
         input[idxInput++] = aNumber;
     }
 
-    for (int i = 0; i < nData; i++) {
-        printf("%d ", input[i]);
-    }
-    printf("\n");
-
     free(line);
     fclose(fp);
 
@@ -75,8 +70,43 @@ int main(int argc, char *argv[]) {
      */
 
     // TODO: Spawn child processes and launch childProgram if necessary
+    pid_t pid;
+    int id = 0;
+    int startIdx = 0;
+    int endIdx = nData-1;
+    int level;
 
-    // TODO: Wait all child processes to terminate if necessary
+    for (level = 0; level < depth; level++) {
+        id *= 10;
+        int dataPerProcess = nData/degrees[level];
+        printf("Level: %d, data: %d\n", level, nData);
+        for (int j = 0; j < degrees[level]; j++) {
+            id += 1;
+            pid = fork();
+
+            if (pid == 0) {
+                if (j == degrees[level] - 1) {
+                    nData = nData - (degrees[level] - 1) * dataPerProcess;
+                } else {
+                    nData = dataPerProcess;
+                }
+                if (level == depth-1) {
+                    printf("FINISHED -> Child: %d has %d integers\n", id, nData);
+                }
+               
+                break;
+            }
+        }
+        if (pid > 0) {
+            break;
+        }
+
+    }
+
+    // Wait all child processes to terminate if necessary
+    for (int i = 0; i < degrees[level]; i++) {
+        wait(NULL);
+    }
 
     // TODO: Merge sort or Quick sort (or other leaf node sorting algorithm)
 
