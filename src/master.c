@@ -36,10 +36,13 @@ int main(int argc, char *argv[]) {
     }
 
     // Read degrees of each level
-    int *degrees;
+    int *degrees = NULL;
     if (depth > 0) {
         if((nread = getLineFromFile(fp, line, len)) != -1) {            // Read next line and write it to line buffer
            degrees = stringToIntArray(line, depth);
+            if (degrees == NULL) {
+                exit(EXIT_FAILURE);
+            }
         } else {
             // TODO: handle failure
         }
@@ -47,6 +50,8 @@ int main(int argc, char *argv[]) {
         // if depth is 0 there will be an empty line that needs to be consumed.
         getLineFromFile(fp, line, len);
     }
+
+
 
     // Read input data
     int * input = (int *)malloc(sizeof(int) * nData);
