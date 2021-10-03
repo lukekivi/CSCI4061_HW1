@@ -87,12 +87,11 @@ int main(int argc, char *argv[]) {
             if (pid == 0) {
                 if (j == degrees[level] - 1) {
                     nData = nData - (degrees[level] - 1) * dataPerProcess;
-                    // would nData = nData % dataPerProcess work the same/better?
                     startIdx = endIdx-(nData-1);
                 } else {
                     nData = dataPerProcess;
-                    startIdx = j*dataPerProcess;
-                    endIdx = ((j+1) * dataPerProcess)-1;
+                    startIdx += j*dataPerProcess;
+                    endIdx = startIdx + (dataPerProcess-1);
                 }
                 if (level == depth-1) {
                     printf("FINISHED -> Child: %d has %d integers\n", id, nData);
