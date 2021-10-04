@@ -81,14 +81,17 @@ int main(int argc, char *argv[]) {
         int dataPerProcess = nData/degrees[level];
         printf("Level: %d, data: %d\n", level, nData);
         for (int j = 0; j < degrees[level]; j++) {
-            id += 1;
             pid = fork();
-
+            id += 1;
+            
             if (pid == 0) {
                 if (j == degrees[level] - 1) {
                     nData = nData - (degrees[level] - 1) * dataPerProcess;
+                    startIdx = endIdx-(nData-1);
                 } else {
                     nData = dataPerProcess;
+                    startIdx += j*dataPerProcess;
+                    endIdx = startIdx + (dataPerProcess-1);
                 }
                 if (level == depth-1) {
                     printf("FINISHED -> Child: %d has %d integers\n", id, nData);
@@ -98,6 +101,8 @@ int main(int argc, char *argv[]) {
             }
         }
         if (pid > 0) {
+            id /= 10;
+            // I think the ids probably weren't being reset for the parent processes.
             break;
         }
 
