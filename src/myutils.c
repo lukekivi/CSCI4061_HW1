@@ -76,8 +76,8 @@ void quickSort(int arr[], int low, int high) {
   arr[i+1] = arr[high];
   arr[high] = temp;
 
-  quicksort(arr, low, i);
-  quicksort(arr, (i+2), high);
+  quickSort(arr, low, i);
+  quickSort(arr, (i+2), high);
 }
 
 
