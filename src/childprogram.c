@@ -1,6 +1,7 @@
 #include "myutils.h"
 
 int main(int argc, char *argv[]) {
+    printf("Childprogram\n");
 
     if (argc < 7) {
         printf("Less number of arguments.\n");
@@ -17,7 +18,9 @@ int main(int argc, char *argv[]) {
     int myDataLen = strtol(argv[5], NULL, 10);
     char* inputFileName = argv[6];
 
-    // TODO: Write child program code here
+    
+    // printf("---> depth: %d, id: %d, str_id: %s, stidx: %d, endidx: %d, ndata: %d, inputfile: %s\ns", myDepth, myID, strMyID, myStartIdx, myEndIdx, myDataLen, inputFileName);
+
 
 
     return EXIT_SUCCESS;

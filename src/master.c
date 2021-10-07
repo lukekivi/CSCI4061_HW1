@@ -24,6 +24,7 @@ int main(int argc, char *argv[]) {
     memset(inputFileName, '\0', MaxFileNameLength);
     sprintf(inputFileName, "input/%s", argv[1]);
 
+
     if ((fp = getFilePointer(inputFileName)) == NULL) {             // Open a file and return file pointer to the file
         exit(EXIT_FAILURE);
     }
@@ -51,8 +52,6 @@ int main(int argc, char *argv[]) {
         getLineFromFile(fp, line, len);
     }
 
-
-
     // Read input data
     int * input = (int *)malloc(sizeof(int) * nData);
     int aNumber;
@@ -70,6 +69,7 @@ int main(int argc, char *argv[]) {
      */
 
     // TODO: Spawn child processes and launch childProgram if necessary
+
     pid_t pid;
     int id = 0;
     int startIdx = 0;
@@ -79,7 +79,6 @@ int main(int argc, char *argv[]) {
     for (level = 0; level < depth; level++) {
         id *= 10;
         int dataPerProcess = nData/degrees[level];
-        printf("Level: %d, data: %d\n", level, nData);
         for (int j = 0; j < degrees[level]; j++) {
             pid = fork();
             id += 1;
@@ -94,7 +93,27 @@ int main(int argc, char *argv[]) {
                     endIdx = startIdx + (dataPerProcess-1);
                 }
                 if (level == depth-1) {
-                    printf("FINISHED -> Child: %d has %d integers\n", id, nData);
+                    char strDepth[LineBufferSize], strId[LineBufferSize], strStartIdx[LineBufferSize];
+                    char strEndIdx[LineBufferSize], strNData[LineBufferSize];
+
+                    sprintf(strDepth, "%d", depth);
+                    sprintf(strId, "%d", id);
+                    sprintf(strStartIdx, "%d", startIdx);
+                    sprintf(strEndIdx, "%d", endIdx);
+                    sprintf(strNData, "%d", nData);
+
+                    char * args[8];
+                    args[0] = "childProgram";
+                    args[1] = strDepth;
+                    args[2] = strId;
+                    args[3] = strStartIdx;
+                    args[4] = strEndIdx;
+                    args[5] = strNData;
+                    args[6] = argv[1];
+                    args[7] = NULL;
+
+                    int flag = execv(args[0], args);
+                    printf("%d\n", flag);
                 }
                
                 break;
@@ -107,17 +126,17 @@ int main(int argc, char *argv[]) {
         }
 
     }
-
     // Wait all child processes to terminate if necessary
-    for (int i = 0; i < degrees[level]; i++) {
-        wait(NULL);
+    if (depth > 0) {
+        for (int i = 0; i < degrees[level]; i++) {
+            wait(NULL);
+        }
     }
-
     // TODO: Merge sort or Quick sort (or other leaf node sorting algorithm)
-
-
+    
     free(input);
     free(degrees);
 
     return EXIT_SUCCESS;
 }
+
