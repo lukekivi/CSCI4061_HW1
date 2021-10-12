@@ -16,9 +16,6 @@ int main(int argc, char *argv[]) {
 
     // Parse input file
     FILE * fp;                                                      // File pointer
-    char *line = (char *)malloc(sizeof(char) * LineBufferSize);         // Line buffer where a new line is stored
-    size_t len = LineBufferSize;                                        // The size of the line buffer
-    ssize_t nread;                                                  // Length of a new line read
 
     char inputFileName[MaxFileNameLength];
     memset(inputFileName, '\0', MaxFileNameLength);
@@ -29,120 +26,70 @@ int main(int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    // Read the number of data and depth
     int nData;
-    int depth = 0;
-    if((nread = getLineFromFile(fp, line, len)) != -1) {            // Read next line and write it to line buffer
-        sscanf(line, "%d %d\n", &nData, &depth);
-    }
-
-    if (depth > 9 || depth < 0) {
-        fprintf(stderr, "ERROR: Invalid depth. (min = 0 | max = 9)\n");
-        exit(EXIT_FAILURE);
-    }
-
-    // Read degrees of each level
+    int depth;
     int *degrees = NULL;
-    if (depth > 0) {
-        if((nread = getLineFromFile(fp, line, len)) != -1) {            // Read next line and write it to line buffer
-           degrees = stringToIntArray(line, depth);
-            if (degrees == NULL) {
-                exit(EXIT_FAILURE);
-            }
-        } else {
-            fprintf(stderr, "ERROR: Faile to read degrees from file.\n");
-            exit(EXIT_FAILURE);
-        }
-    } else {
-        // if depth is 0 there will be an empty line that needs to be consumed.
-        getLineFromFile(fp, line, len);
-    }
+    getFileAttributes(fp, &nData, &depth, &degrees);
 
-    // Read input data
-    int * input = (int *)malloc(sizeof(int) * nData);
-    int aNumber;
-    int idxInput = 0;
-    while((nread = getLineFromFile(fp, line, len)) != -1) {
-        sscanf(line, "%d\n", &aNumber);
-        input[idxInput++] = aNumber;
-    }
-
-    free(line);
-    fclose(fp);
-
-    /*
-     * Each process is assigned floor(nData/degrees[current_depth])
-     */
-
-    // TODO: Spawn child processes and launch childProgram if necessary
-
-    pid_t pid;
-    int id = 0;
+    // Spawn child processes and launch childProgram if necessary
+    int* input = NULL;
     int startIdx = 0;
     int endIdx = nData-1;
-    int level;
 
-    for (level = 0; level < depth; level++) {
-        id *= 10;
-        int dataPerProcess = nData/degrees[level];
-        for (int j = 0; j < degrees[level]; j++) {
-            pid = fork();
+    if (depth > 0) {
+        pid_t pid;
+        int id = 0;
+        int dataPerProcess = nData/degrees[0];
+        char program[] = "childProgram";
+        char programPath[] = "childProgram";
+        char strDepth[] = "1";
+
+        for (int i = 0; i < degrees[0]; i++) {
             id += 1;
-            
+            pid = fork();
+
             if (pid == 0) {
-                if (j == degrees[level] - 1) {
-                    nData = nData - (degrees[level] - 1) * dataPerProcess;
+                if (i == degrees[0] - 1) {
+                    nData = nData - (degrees[0] - 1) * dataPerProcess;
                     startIdx = endIdx-(nData-1);
                 } else {
                     nData = dataPerProcess;
-                    startIdx += j*dataPerProcess;
+                    startIdx += i * dataPerProcess;
                     endIdx = startIdx + (dataPerProcess-1);
                 }
-                if (level == depth-1) {
-                    char strDepth[LineBufferSize], strId[LineBufferSize], strStartIdx[LineBufferSize];
-                    char strEndIdx[LineBufferSize], strNData[LineBufferSize];
+        
+                char strId[LineBufferSize], strStartIdx[LineBufferSize];
+                char strEndIdx[LineBufferSize], strNData[LineBufferSize];
 
-                    sprintf(strDepth, "%d", depth);
-                    sprintf(strId, "%d", id);
-                    sprintf(strStartIdx, "%d", startIdx);
-                    sprintf(strEndIdx, "%d", endIdx);
-                    sprintf(strNData, "%d", nData);
+                sprintf(strId, "%d", id);
+                sprintf(strStartIdx, "%d", startIdx);
+                sprintf(strEndIdx, "%d", endIdx);
+                sprintf(strNData, "%d", nData);
 
-                    char * args[8];
-                    args[0] = "childProgram";
-                    args[1] = strDepth;
-                    args[2] = strId;
-                    args[3] = strStartIdx;
-                    args[4] = strEndIdx;
-                    args[5] = strNData;
-                    args[6] = argv[1];
-                    args[7] = NULL;
-
-                    int flag = execv(args[0], args);
-                    printf("%d\n", flag);
+                if (execl(programPath, program, strDepth, strId, strStartIdx, strEndIdx, strNData, inputFileName , NULL) == -1) {
+                    fprintf(stderr, "ERROR: Failed to exec child program.");
+                    free(degrees);
+                    fclose(fp);
+                    exit(EXIT_FAILURE);
                 }
-               
-                break;
             }
         }
-        if (pid > 0) {
-            id /= 10;
-            // I think the ids probably weren't being reset for the parent processes.
-            break;
-        }
 
-    }
-    // Wait all child processes to terminate if necessary
-    if (depth > 0) {
-        for (int i = 0; i < degrees[level]; i++) {
+
+        // Wait all child processes to terminate if necessary
+        for (int i = 0; i < degrees[0]; i++) {
             wait(NULL);
         }
+    } else {
+        // Read input data from original input file
+        input = getFileInput(fp, startIdx, endIdx);
+        quickSort(input, 0, nData-1);
     }
     // TODO: Merge sort or Quick sort (or other leaf node sorting algorithm)
     
+    fclose(fp);
     free(input);
     free(degrees);
 
     return EXIT_SUCCESS;
 }
-
