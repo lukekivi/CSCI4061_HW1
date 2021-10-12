@@ -29,6 +29,7 @@ int *stringToIntArray(char* str, int n) {
     int intsCompleted = 0;
     size_t strLen = strlen(str);
 
+    printf("String: %s\n", str);
     for (int i = 0; i < strLen; i++) {
         char curChar = str[i];
         if (curChar == ' ' || i == strLen - 1) {
@@ -49,7 +50,10 @@ int *stringToIntArray(char* str, int n) {
         printf("The string provided was of an invalid format or did not contain any integers.\n");
         integers = NULL;
     }
-
+    for (int i = 0; i < n; i++) {
+        printf("%d ",integers[i]);    
+    }
+    printf("\n");
     return integers;
 }
 

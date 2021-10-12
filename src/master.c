@@ -36,6 +36,11 @@ int main(int argc, char *argv[]) {
         sscanf(line, "%d %d\n", &nData, &depth);
     }
 
+    if (depth > 9 || depth < 0) {
+        fprintf(stderr, "ERROR: Invalid depth. (min = 0 | max = 9)\n");
+        exit(EXIT_FAILURE);
+    }
+
     // Read degrees of each level
     int *degrees = NULL;
     if (depth > 0) {
@@ -45,7 +50,8 @@ int main(int argc, char *argv[]) {
                 exit(EXIT_FAILURE);
             }
         } else {
-            // TODO: handle failure
+            fprintf(stderr, "ERROR: Faile to read degrees from file.\n");
+            exit(EXIT_FAILURE);
         }
     } else {
         // if depth is 0 there will be an empty line that needs to be consumed.
