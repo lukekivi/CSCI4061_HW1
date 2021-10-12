@@ -83,6 +83,63 @@ void quickSort(int arr[], int low, int high) {
 
 // TODO: Multiway Merge Sort with multiple data streams from intermediate files
 void merge(char* myID, int depth, int nChild) {
+  // translates myID to an integer so we can use math to find childrens name
+  int intmyId = atoi(myID);
+
+  // figure out how long the array needs to be
+  int arr[1000];
+  int childFileName;
+  int len = 0;
+
+  // for loop reading for nChild, myID * 10  + current nChild
+  for (int i=1; i <= nChild; i++) {
+      // find the id of the child we want to read from
+      childFileName = intmyid * 10 + i;
+      // read from childFileName
+      fpt_read = fopen("<childFileName>.out", "r");
+      if (fpt_read == NULL) {
+        printf("Press any key to exit...\n");
+        exit(0);
+      }
+
+      // Get the first line into childLen.
+      char *line = (char *)malloc(sizeof(char) * LineBufferSize);         // Line buffer where a new line is stored
+      size_t len = LineBufferSize;
+      ssize_t  nread;
+      int childLen;
+      if((nread = getLineFromFile(fp, line, len)) != -1) {            // Read next line and write it to line buffer
+          sscanf(line, "%d \n", &childLen);
+      }
+
+      // Read the rest.
+      int integer;
+      char ch; //placeholder, fgetc reads in char
+      while ((ch = fgetc(fpt_read)) != EOF) {
+        integer = atoi(ch);
+
+        // Finds the correct spot for the integer (j).
+        int j = 0;
+        while (integer > arr[j] && j < len) {
+          j+= 1;
+        }
+
+        // Moves everything to the right one spot.
+        for (int k = len-1; k >= j; k--) {
+          arr[k+1] = arr[k];
+        }
+
+        // Assigns the new integer to its correct spot.
+        arr[j] = integer;
+        len += 1;
+
+      }
 
 
+      fclose(fpt_read);
+  }
+
+  free(line);
+
+  // writeSortedResultToFile with <myID>
+  writeSortedResultToFile(myID, arr, len);
 }
