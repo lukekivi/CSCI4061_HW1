@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
 
         for (int i = 0; i < degrees[curDepth]; i++) {
             childId += 1;
-            childIds[i][LineBufferSize];
+            childIds[i] = (char *) malloc(sizeof(char) * LineBufferSize);
             sprintf(childIds[i], "%d", childId);
 
             pid = fork();
