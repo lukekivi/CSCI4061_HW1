@@ -82,6 +82,12 @@ int main(int argc, char *argv[]) {
 
         // merge sort and make a new output file
         merge(strId, curDepth, degrees[curDepth]);
+
+        // free childIds
+        for (int i = 0; i < degrees[curDepth]; i++) {
+            free(childIds[i]);
+        }
+
     } else {
         // this is a leaf node
         int* input = getFileInput(fp, startIdx, endIdx);
@@ -89,7 +95,7 @@ int main(int argc, char *argv[]) {
         generateOutputFile(strId, input, curNData);
         free(input);
     }
-
+    
     free(degrees);
     fclose(fp);
 
