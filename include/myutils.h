@@ -15,6 +15,7 @@
  */
 void printArray(int arr[], int size);
 
+
 /**
  * Write sorted numbers to a file
  *
@@ -25,24 +26,40 @@ void printArray(int arr[], int size);
  */
 void writeSortedResultToFile(char* myID, int arr[], int size);
 
+
 /**
  * Split a string into an array of n integers.
  * 
  * @param str the string of n integers seperated by spaces and ending with a new line 
+ * @param arr the array to be filled with integers from str
  * @param n   Number of integers within the string
  * @return    Array of n integers that must be freed
+ * @return        success (1) or error value (-1)
  */
-int* stringToIntArray(char* str, int n);
+int stringToIntArray(char* str, int arr[], int n);
+
 
 /**
- * Get and parse first and second line of an input file.
+ * Get and parse first line of an input file.
  * 
  * @param fp      the file to parse
  * @param nData   address of variable to be assigned number of data
  * @param depth   address of variable to be assigned depth
- * @param degrees address of variable to be assigned array of degrees
+ * @return        success (1) or error value (-1)
  */
-void getFileAttributes(FILE* fp, int* nData, int* depth, int** degrees);
+int getFileAttributes(FILE* fp, int* nData, int* depth);
+
+
+/**
+ * Get and parse second line of an input file.
+ * 
+ * @param fp      the file to parse
+ * @param degrees array to be filled with integers
+ * @param depth   depth of the search
+ * @return        success (1) or error value (-1)
+ */
+int getDegreesFromFile(FILE *fp, int degrees[], int depth);
+
 
 /**
  * Get the data to be sorted from an input file. Assumes the fp is already in the right place.
@@ -54,7 +71,10 @@ void getFileAttributes(FILE* fp, int* nData, int* depth, int** degrees);
 int* getFileInput(FILE* fp, int startIdx, int endIdx);
 
 void quickSort(int arr[], int low, int high);
-void merge(char* myID, int depth, int nChild);
+
+
+void merge(char* myID, char** childIds, int depth, int nChild);
+
 
 /**
  * Make a sub array from a parent array.
@@ -64,15 +84,5 @@ void merge(char* myID, int depth, int nChild);
  * @return A sub array
  */
 int* makeSubArray(int nums[], int startIndex, int endIndex);
-
-/**
- * Generate an input file for childProgram.
- * 
- * @param myId id of the calling process
- * @param nums array of relevent integers
- * @param n    size of array nums
- * @return 1 for success, -1 for error
- */
-int generateOutputFile(char* myId, int nums[], int n);
 
 #endif //MYUTILS_H

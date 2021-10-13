@@ -26,8 +26,15 @@ int main(int argc, char *argv[]) {
 
     int masterNData;
     int masterDepth;
-    int *degrees = NULL;
-    getFileAttributes(fp, &masterNData, &masterDepth, &degrees);
+    if (getFileAttributes(fp, &masterNData, &masterDepth) == -1) {
+        exit(EXIT_FAILURE);
+    }
+
+    int degrees[masterDepth];
+    if (getDegreesFromFile(fp, 
+    degrees, masterDepth) == -1) {
+        exit(EXIT_FAILURE);
+    }
 
     if (curDepth < masterDepth) {
         // this is an internal node
@@ -45,9 +52,11 @@ int main(int argc, char *argv[]) {
 
         for (int i = 0; i < degrees[curDepth]; i++) {
             childId += 1;
-            childIds[i] = (char *) malloc(sizeof(char) * LineBufferSize);
-            sprintf(childIds[i], "%d", childId);
-
+            char tempChildId[LineBufferSize];
+            sprintf(tempChildId, "%d", childId);
+            childIds[i] = tempChildId;
+            
+    
             pid = fork();
 
             if (pid == 0) {
@@ -68,6 +77,12 @@ int main(int argc, char *argv[]) {
                 sprintf(strEndIdx, "%d", endIdx);
                 sprintf(strNData, "%d", curNData);
 
+                char strCurrDepth[LineBufferSize];
+                sprintf(strCurrDepth, "%d", curDepth);
+
+                // Log spawning of child
+                printf("Parent [%d] - Spawn Child [%s, %s, %s, %s, %s]\n", id, strDepth, childIds[i], strStartIdx, strEndIdx, strNData);
+
                 if (execl(programPath, program, strDepth, childIds[i], strStartIdx, strEndIdx, strNData, inputFileName, NULL) == -1) {
                     fprintf(stderr, "ERROR: Failed to exec child program.");
                     free(degrees);
@@ -81,18 +96,14 @@ int main(int argc, char *argv[]) {
         }
 
         // merge sort and make a new output file
-        merge(strId, curDepth, degrees[curDepth]);
-
-        // free childIds
-        for (int i = 0; i < degrees[curDepth]; i++) {
-            free(childIds[i]);
-        }
+        merge(strId, childIds, curDepth, degrees[curDepth]);
 
     } else {
         // this is a leaf node
         int* input = getFileInput(fp, startIdx, endIdx);
         quickSort(input, 0, curNData-1);
-        generateOutputFile(strId, input, curNData);
+        writeSortedResultToFile(strId, input, curNData);
+        printf("Process [%s] - Quick Sort - Done\n", strId);
         free(input);
     }
     

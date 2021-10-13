@@ -28,8 +28,39 @@ int main(int argc, char *argv[]) {
 
     int nData;
     int depth;
-    int *degrees = NULL;
-    getFileAttributes(fp, &nData, &depth, &degrees);
+    if (getFileAttributes(fp, &nData, &depth) == -1) {
+        exit(EXIT_FAILURE);
+    }
+
+    if (nData < 1) {
+        fprintf(stderr, "ERROR: No input data.\n");
+        exit(EXIT_FAILURE);
+    } 
+    
+    if (depth > 9) {
+        fprintf(stderr, "ERROR: Depth is greater than 9.\n");
+        exit(EXIT_FAILURE);
+    }
+
+    int degrees[depth];
+    if (getDegreesFromFile(fp, degrees, depth) == -1) {
+        exit(EXIT_FAILURE);
+    }
+
+    // calculate number of leaf nodes
+    int numLeafNodes = 1;
+    for (int i = 0; i < depth; i++) {
+        if (degrees[i] < 1 || degrees[i] > 9) {
+            fprintf(stderr, "ERROR: Number of leaf nodes is greater than the size of input data.\n");
+            exit(EXIT_FAILURE);    
+        }
+        numLeafNodes *= degrees[i];
+    }
+
+    if (numLeafNodes > nData) {
+        fprintf(stderr, "ERROR: Number of leaf nodes is greater than the size of input data.\n");
+        exit(EXIT_FAILURE);
+    }
 
     // Spawn child processes and launch childProgram if necessary
     int* input = NULL;
@@ -37,6 +68,8 @@ int main(int argc, char *argv[]) {
     int endIdx = nData-1;
 
     if (depth > 0) {
+        char* childIds[degrees[0]];
+
         pid_t pid;
         int id = 0;
         int dataPerProcess = nData/degrees[0];
@@ -46,6 +79,9 @@ int main(int argc, char *argv[]) {
 
         for (int i = 0; i < degrees[0]; i++) {
             id += 1;
+            childIds[i] = (char *) malloc(sizeof(char) * LineBufferSize);
+            sprintf(childIds[i], "%d", id);
+
             pid = fork();
 
             if (pid == 0) {
@@ -68,7 +104,6 @@ int main(int argc, char *argv[]) {
 
                 if (execl(programPath, program, strDepth, strId, strStartIdx, strEndIdx, strNData, inputFileName , NULL) == -1) {
                     fprintf(stderr, "ERROR: Failed to exec child program.");
-                    free(degrees);
                     fclose(fp);
                     exit(EXIT_FAILURE);
                 }
@@ -80,16 +115,25 @@ int main(int argc, char *argv[]) {
         for (int i = 0; i < degrees[0]; i++) {
             wait(NULL);
         }
+
+        merge("master", childIds, 0, degrees[0]);
+
+        for (int i = 0; i < degrees[0]; i++) {
+            free(childIds[i]);
+        }
     } else {
         // Read input data from original input file
-        input = getFileInput(fp, startIdx, endIdx);
+        if ((input = getFileInput(fp, startIdx, endIdx)) == NULL) {
+            free(input);
+            fprintf(stderr, "ERROR: File did not contain the requested amount of data");
+            exit(EXIT_FAILURE);
+        }
         quickSort(input, 0, nData-1);
+        writeSortedResultToFile("master", input, nData);
+        printf("Process [master] - Quick Sort - Done\n");
     }
-    // TODO: Merge sort or Quick sort (or other leaf node sorting algorithm)
-    
+
     fclose(fp);
     free(input);
-    free(degrees);
-
     return EXIT_SUCCESS;
 }
