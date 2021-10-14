@@ -5,6 +5,7 @@
 #include "myutils.h"
 
 int NUM_CHILD_PRGRM_ARGS = 8;
+int FLAG_VALUE = 2147483647;
 
 void printArray(int arr[], int size) {
     int i;
@@ -175,58 +176,103 @@ void quickSort(int arr[], int low, int high) {
 
 // Multiway Merge Sort with multiple data streams from intermediate files
 int merge(char* myId, char** childIds, int depth, int nChild) {
-    int arr[1000]; // arr length of 1000 to account for maximum input data (1000).
-    int arrLen = 0; // variables that counts the length of used spots in arr
+        int* arr[nChild];      // nested array to contain integers from each file
+        int sizes[nChild];     // sizes of the associated array
 
+    if (nChild == 0) {
+        return -1;
+    }
+
+    // Fill arr with all input from files
     for (int i=0; i < nChild; i++) {
         char path[MaxFileNameLength];
         strcpy(path, "output/");
         strcat(path, childIds[i]);
-        strcat(path, ".out"); // path is now "output/[ID].out"
+        strcat(path, ".out");                                               // path is now "output/[ID].out"
 
+        FILE* fp = getFilePointer(path);                                    // pointer to path
 
-        FILE* filePathPointer = getFilePointer(path); // pointer to path
-
-        int integer; //placeholder for integers scanned from path
+        int integer;                                                        //placeholder for integers scanned from path
         char *line = (char *)malloc(sizeof(char) * LineBufferSize);         // Line buffer where a new line is stored
         size_t len = LineBufferSize;
 
         ssize_t  nread;
-        nread = getLineFromFile(filePathPointer, line, len); // get rid of first line (length of input, not our data).
-        while ((nread = getLineFromFile(filePathPointer, line, len)) != -1) {
-          sscanf(line, "%d \n", &integer);
-
-          // j will find the correct spot for the scanned in integer.
-          int j = 0;
-          while (integer > arr[j] && j < arrLen) {
-            j+= 1;
-          }
-
-          // Moves everything to the right one spot.
-          for (int k = arrLen-1; k >= j; k--) {
-            arr[k+1] = arr[k];
-          }
-
-          // Assigns the new integer to its correct spot.
-          arr[j] = integer;
-          arrLen += 1;
+        if (getLineFromFile(fp, line, len) == -1) {                         // get rid of first line (length of input, not our data).
+            fclose(fp);
+            return -1;
         }
+         
+        sizes[i] = atoi(line);
 
-        // free the line every iteration.
-        free(line);
+        arr[i] = (int*) malloc(sizeof(int) * sizes[i]);
+        if (getFileInput(fp, arr[i], 0, sizes[i] - 1) == -1) { 
+            fclose(fp);
+            return -1;
+        }
+        fclose(fp);
+    }
+
+    // If nChild is 1 we do not need to sort this
+    if (nChild == 1) {
+        printf("Process [%s] - Merge Sort  - Done\n", myId);
+
+        // writeSortedResultToFile with <myID>
+        writeSortedResultToFile(myId, arr[0], sizes[0]);
+        freeIntegerArray(arr, nChild);
+        return 1;
+    }
+
+
+    // calculate total number of data to sort
+    int totalData = 0;
+    for (int i = 0; i < nChild; i++) {
+        totalData += sizes[i];
+    }
+
+    // Merge the input arrays
+    int orderedArr[totalData];                      // final array
+    int indices[nChild];                            // indices for each input array
+
+    for (int i = 0; i < nChild; i++) {
+        indices[i] = 0;
+    }
+
+    for (int i = 0; i < totalData; i++) {
+        int minValue;                               // the min value from all children in this iteration
+        int minChild = FLAG_VALUE;                  // child the min value was taken from, starts with a flag value
+        for (int j = 0; j < nChild; j++) {
+            if(indices[j] < sizes[j]) {             // check to make sure the index is not out of bounds
+                int curVal = arr[j][indices[j]];
+                if (curVal < minValue || minChild == FLAG_VALUE) {
+                    minValue = curVal;
+                    minChild = j;
+                }
+            }
+        }
+        orderedArr[i] = minValue;
+        indices[minChild] += 1;
     }
 
     printf("Process [%s] - Merge Sort  - Done\n", myId);
 
     // writeSortedResultToFile with <myID>
-    writeSortedResultToFile(myId, arr, arrLen);
-    memset(arr, 0, 1000);
+    writeSortedResultToFile(myId, orderedArr, totalData);
+    freeIntegerArray(arr, nChild);
     return 1;
 }
+
 
 // Function to free a malloc'd string array
 void freeStringArray(char** strings, int n) {
     for (int index = 0; index < n; index++) {
         free(strings[index]);
+    }
+}
+
+
+// Function to free a malloc'd int array
+void freeIntegerArray(int** integers, int n) {
+    for (int index = 0; index < n; index++) {
+        free(integers[index]);
     }
 }

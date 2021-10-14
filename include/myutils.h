@@ -84,4 +84,11 @@ int merge(char* myID, char** childIds, int depth, int nChild);
  */
 void freeStringArray(char** strings, int n);
 
+/**
+ * Free an array of malloc'd int arrays.
+ * @param integers Array of ints to be free'd
+ * @param n       Size of array.
+ */
+void freeIntegerArray(int** integers, int n);
+
 #endif //MYUTILS_H
