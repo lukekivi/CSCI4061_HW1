@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g 
+CFLAGS=-g
 
 SRCDIR=src
 INCLDIR=include

@@ -64,25 +64,24 @@ int getDegreesFromFile(FILE *fp, int degrees[], int depth);
 /**
  * Get the data to be sorted from an input file. Assumes the fp is already in the right place.
  * 
- * @param fp the file to parse, already in position
+ * @param fp       the file to parse, already in position
+ * @param arr      empty array of size endIdx - startIdx + 1 to be filled with input
  * @param startIdx where to start recording values
  * @param endIdx   where to end recording values
+ * @return         success (1) or error value (-1)
  */
-int* getFileInput(FILE* fp, int startIdx, int endIdx);
+int getFileInput(FILE* fp, int arr[], int startIdx, int endIdx);
 
 void quickSort(int arr[], int low, int high);
 
 
-void merge(char* myID, char** childIds, int depth, int nChild);
-
+int merge(char* myID, char** childIds, int depth, int nChild);
 
 /**
- * Make a sub array from a parent array.
- * @param  nums       Parent array
- * @param  startIndex Index to start division of array
- * @param  endIndex   Index to end division of array
- * @return A sub array
+ * Free an array of malloc'd strings.
+ * @param strings Array of strings to be free'd
+ * @param n       Size of array.
  */
-int* makeSubArray(int nums[], int startIndex, int endIndex);
+void freeStringArray(char** strings, int n);
 
 #endif //MYUTILS_H

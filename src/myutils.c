@@ -25,6 +25,8 @@ void writeSortedResultToFile(char* myID, int arr[], int size) {
     writeLineToFile(filepath, line);                // Write data in the write buffer to the file
 }
 
+
+// Converts a string to an array of ints given they are seperated by spaces
 int stringToIntArray(char* str, int arr[], int n) {
     int curInt = 0;
     int intsCompleted = 0;
@@ -33,11 +35,14 @@ int stringToIntArray(char* str, int arr[], int n) {
     for (int i = 0; i < strLen; i++) {
         char curChar = str[i];
         if (curChar == ' ' || i == strLen - 1) {
+            // an int is completed
             arr[intsCompleted] = curInt;
 
+            // setup for next int
             intsCompleted += 1;
             curInt = 0;
         } else {
+            // append curInt with the new integer
             curInt *= 10;
             curInt += atoi(&curChar);
         }
@@ -53,13 +58,15 @@ int stringToIntArray(char* str, int arr[], int n) {
     return 1;
 }
 
+
+// Gets the number of data and depth from the file
+// Assumes the fp is at the beginning of the file
 int getFileAttributes(FILE* fp, int* nData, int* depth) {
     char *line = (char *)malloc(sizeof(char) * LineBufferSize);     // Line buffer where a new line is stored
     size_t len = LineBufferSize;                                    // The size of the line buffer
     ssize_t nread;                                                  // Length of a new line read
 
-    // Read nData and depth    
-    if((nread = getLineFromFile(fp, line, len)) != -1) {            // Read next line and write it to line buffer
+    if((nread = getLineFromFile(fp, line, len)) != -1) {            // Read line and write it to line buffer
         sscanf(line, "%d %d\n", nData, depth);
     } else {
         free(line);
@@ -70,6 +77,8 @@ int getFileAttributes(FILE* fp, int* nData, int* depth) {
     return 1;
 }
 
+
+// Gets the degrees from the file. Assumes the fp is in the right position
 int getDegreesFromFile(FILE *fp, int degrees[], int depth) {
     char *line = (char *)malloc(sizeof(char) * LineBufferSize);     // Line buffer where a new line is stored
     size_t len = LineBufferSize;                                    // The size of the line buffer
@@ -77,7 +86,7 @@ int getDegreesFromFile(FILE *fp, int degrees[], int depth) {
 
     // Read degrees of each level
     if (depth > 0) {
-        if((nread = getLineFromFile(fp, line, len)) != -1) {            // Read next line and write it to line buffer
+        if((nread = getLineFromFile(fp, line, len)) != -1) {            // Read line and write it to line buffer
             if (stringToIntArray(line, degrees, depth) == -1) {
                 free(line);
                 return -1;
@@ -95,20 +104,22 @@ int getDegreesFromFile(FILE *fp, int degrees[], int depth) {
     return 1;
 }
 
-int* getFileInput(FILE* fp, int startIdx, int endIdx) {
+
+// Gets the integer values that need to be sorted from a file
+// Assumes the fp is in the correct position already
+int getFileInput(FILE* fp, int arr[], int startIdx, int endIdx) {
     char *line = (char *)malloc(sizeof(char) * LineBufferSize);     // Line buffer where a new line is stored
     size_t len = LineBufferSize;                                    // The size of the line buffer
     ssize_t nread;                                                  // Length of a new line read
     int size = endIdx - startIdx + 1;
-    int * input = (int *)malloc(sizeof(int) * size);
 
     int aNumber;
-    int idxInput = 0;
+    int idxInput = 0;                                               // tracks how many ints have been added 
     int linesRead = 0;
     while((nread = getLineFromFile(fp, line, len)) != -1) {
         if (linesRead >= startIdx && linesRead <= endIdx) {
             sscanf(line, "%d\n", &aNumber);
-            input[idxInput++] = aNumber;
+            arr[idxInput++] = aNumber;
         }
         linesRead += 1;
         if (linesRead > endIdx) {
@@ -117,11 +128,12 @@ int* getFileInput(FILE* fp, int startIdx, int endIdx) {
     }
 
     if (idxInput != size) {
-        free(input);
-        return NULL;
+        fprintf(stderr, "ERROR: File did not contain the requested amount of data");
+        return -1;
     }
-    return input;
+    return 1;
 }
+
 
 void quickSort(int arr[], int low, int high) {
   if (low >= high) {
@@ -152,7 +164,7 @@ void quickSort(int arr[], int low, int high) {
 
 
 // Multiway Merge Sort with multiple data streams from intermediate files
-void merge(char* myId, char** childIds, int depth, int nChild) {
+int merge(char* myId, char** childIds, int depth, int nChild) {
     int arr[1000];
     int arrLen = 0;
     for (int i=0; i < nChild; i++) {
@@ -197,5 +209,12 @@ void merge(char* myId, char** childIds, int depth, int nChild) {
     // writeSortedResultToFile with <myID>
     writeSortedResultToFile(myId, arr, arrLen);
     memset(arr, 0, 1000);
+    return 1;
 }
 
+// Function to free a malloc'd string array
+void freeStringArray(char** strings, int n) {
+    for (int index = 0; index < n; index++) {
+        free(strings[index]);
+    }
+}
