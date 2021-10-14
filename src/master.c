@@ -38,12 +38,12 @@ int main(int argc, char *argv[]) {
     }
 
     if (nData < 1) {
-        fprintf(stderr, "ERROR: No input data.\n");
+        fprintf(stderr, "ERROR: Assumption violation: N. Data (%d) should be between 1 and 1000.\n", nData);
         exit(EXIT_FAILURE);
     } 
     
     if (depth > 9) {
-        fprintf(stderr, "ERROR: Depth is greater than 9.\n");
+        fprintf(stderr, "ERROR: Assumption violation: Depth (%d) is greater than 9.\n", depth);
         exit(EXIT_FAILURE);
     }
 
@@ -56,14 +56,14 @@ int main(int argc, char *argv[]) {
     int numLeafNodes = 1;
     for (int i = 0; i < depth; i++) {
         if (degrees[i] < 1 || degrees[i] > 9) {
-            fprintf(stderr, "ERROR: Degree of a level is not between 1 and 9.\n");
+            fprintf(stderr, "ERROR: Assumption violation: Degree (%d) of a depth (%d) should be between 1 and 9.\n", degrees[i], i);
             exit(EXIT_FAILURE);    
         }
         numLeafNodes *= degrees[i];
     }
 
     if (numLeafNodes > nData) {
-        fprintf(stderr, "ERROR: Number of leaf nodes is greater than the size of input data.\n");
+        fprintf(stderr, "ERROR: Assumption violation: N. leaf nodes (%d) is greater than N. Data (%d).\n", numLeafNodes, nData);
         exit(EXIT_FAILURE);
     }
 
