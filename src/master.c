@@ -1,3 +1,7 @@
+/*test machine: csel-broccoli.cselabs.umn.edu
+* group number: G[45]
+* name: Lucas Kivi, Dallas Schauer, Viet Nguyen
+* x500: kivix019, schau364, nguy4471 */
 #include "myutils.h"
 
 int main(int argc, char *argv[]) {
@@ -51,7 +55,7 @@ int main(int argc, char *argv[]) {
     int numLeafNodes = 1;
     for (int i = 0; i < depth; i++) {
         if (degrees[i] < 1 || degrees[i] > 9) {
-            fprintf(stderr, "ERROR: Number of leaf nodes is greater than the size of input data.\n");
+            fprintf(stderr, "ERROR: Degree of a level is not between 1 and 9.\n");
             exit(EXIT_FAILURE);    
         }
         numLeafNodes *= degrees[i];
@@ -101,6 +105,7 @@ int main(int argc, char *argv[]) {
                 sprintf(strStartIdx, "%d", startIdx);
                 sprintf(strEndIdx, "%d", endIdx);
                 sprintf(strNData, "%d", nData);
+                printf("Parent [%s] - Spawn Child [%s, %s, %s, %s, %s]\n", "master", "1", strId, strStartIdx, strEndIdx, strNData);
 
                 if (execl(programPath, program, strDepth, strId, strStartIdx, strEndIdx, strNData, inputFileName , NULL) == -1) {
                     fprintf(stderr, "ERROR: Failed to exec child program.");
