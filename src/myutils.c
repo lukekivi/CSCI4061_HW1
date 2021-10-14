@@ -176,8 +176,8 @@ void quickSort(int arr[], int low, int high) {
 
 // Multiway Merge Sort with multiple data streams from intermediate files
 int merge(char* myId, char** childIds, int depth, int nChild) {
-        int* arr[nChild];      // nested array to contain integers from each file
-        int sizes[nChild];     // sizes of the associated array
+    int* arr[nChild];      // nested array to contain integers from each file
+    int sizes[nChild];     // sizes of the associated array
 
     if (nChild == 0) {
         return -1;

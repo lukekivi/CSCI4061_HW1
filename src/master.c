@@ -3,8 +3,9 @@
 * name: Lucas Kivi, Dallas Schauer, Viet Nguyen
 * x500: kivix019, schau364, nguy4471 */
 #include "myutils.h"
-
+    
 int main(int argc, char *argv[]) {
+         
     if (argc < 2) {
         printf("Less number of arguments.\n");
         printf("./master InputFileName\n");
