@@ -72,24 +72,32 @@ int main(int argc, char *argv[]) {
     int endIdx = nData-1;
 
     if (depth > 0) {
+        // track all child ids to avoid generating them again later
         char* childIds[degrees[0]];
 
         pid_t pid;
         int id = 0;
         int dataPerProcess = nData/degrees[0];
+
+        // common data for execution of childProgram
         char program[] = "childProgram";
         char programPath[] = "childProgram";
         char strDepth[] = "1";
 
         for (int i = 0; i < degrees[0]; i++) {
             id += 1;
-            childIds[i] = (char *) malloc(sizeof(char) * LineBufferSize);
+            
+            // generate childId and store it in array
+            
+            childIds[i] = (char*) malloc(sizeof(char) * LineBufferSize);
             sprintf(childIds[i], "%d", id);
 
             pid = fork();
 
             if (pid == 0) {
+                // child process sets up for executing childProgram
                 if (i == degrees[0] - 1) {
+                    // the final node in the child set gets all of the remaining data
                     nData = nData - (degrees[0] - 1) * dataPerProcess;
                     startIdx = endIdx-(nData-1);
                 } else {
@@ -98,47 +106,50 @@ int main(int argc, char *argv[]) {
                     endIdx = startIdx + (dataPerProcess-1);
                 }
         
-                char strId[LineBufferSize], strStartIdx[LineBufferSize];
-                char strEndIdx[LineBufferSize], strNData[LineBufferSize];
+                // get string versions of data for childProgram arguments
+                char strStartIdx[LineBufferSize], strEndIdx[LineBufferSize], strNData[LineBufferSize];
 
-                sprintf(strId, "%d", id);
                 sprintf(strStartIdx, "%d", startIdx);
                 sprintf(strEndIdx, "%d", endIdx);
                 sprintf(strNData, "%d", nData);
                 printf("Parent [%s] - Spawn Child [%s, %s, %s, %s, %s]\n", "master", "1", strId, strStartIdx, strEndIdx, strNData);
 
-                if (execl(programPath, program, strDepth, strId, strStartIdx, strEndIdx, strNData, inputFileName , NULL) == -1) {
+                if (execl(programPath, program, strDepth, childIds[i], strStartIdx, strEndIdx, strNData, inputFileName , NULL) == -1) {
                     fprintf(stderr, "ERROR: Failed to exec child program.");
+                    
+                    for (int index = 0; index < degrees[0]; index++) {
+                        freeStringArray(childIds, degrees[0]);
+                    }
+
                     fclose(fp);
                     exit(EXIT_FAILURE);
                 }
             }
         }
 
-
-        // Wait all child processes to terminate if necessary
+        // Wait all child processes to terminate 
         for (int i = 0; i < degrees[0]; i++) {
             wait(NULL);
         }
-
-        merge("master", childIds, 0, degrees[0]);
-
-        for (int i = 0; i < degrees[0]; i++) {
-            free(childIds[i]);
+        
+        // merge data from child processes
+        if (merge("master", childIds, 0, degrees[0]) == 1) {
+            freeStringArray(childIds, degrees[0]);
         }
     } else {
+
         // Read input data from original input file
-        if ((input = getFileInput(fp, startIdx, endIdx)) == NULL) {
-            free(input);
-            fprintf(stderr, "ERROR: File did not contain the requested amount of data");
+        int input[nData];
+        if ((getFileInput(fp, input, startIdx, endIdx)) == -1) {
             exit(EXIT_FAILURE);
         }
+
+        // sort and write output file
         quickSort(input, 0, nData-1);
         writeSortedResultToFile("master", input, nData);
         printf("Process [master] - Quick Sort - Done\n");
     }
 
     fclose(fp);
-    free(input);
     return EXIT_SUCCESS;
 }
