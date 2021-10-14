@@ -128,56 +128,62 @@ int* getFileInput(FILE* fp, int startIdx, int endIdx) {
 }
 
 void quickSort(int arr[], int low, int high) {
+  // if low >= high, it'll be one or 0 length, and this iteration can stop.
   if (low >= high) {
     return;
   }
-  int pivot = arr[high];
-  int temp;
-  int i = low-1;
+
+  int pivot = arr[high]; // set pivot to last array entry.
+  int temp; // temp variable for swapping
+  int i = low-1; // keeps track of where the pivot will be placed at the end.
 
   for (int j = low; j < high; j++) {
     if (arr[j] <= pivot)
     {
-      i++;
-
+      i++; // if the current element is less than or equal the pivot, i is
+           // incremented to reflect another variable that needs to be before
+           // the pivot.
       temp = arr[i];
       arr[i] = arr[j];
-      arr[j] = temp;
+      arr[j] = temp; // swap arr[i] with arr[j] so arr[i] will be before the
+                     // the pivot.
     }
   }
 
   temp = arr[i+1];
   arr[i+1] = arr[high];
-  arr[high] = temp;
+  arr[high] = temp; // swap pivot with the spot where the elements before it
+                    // in the array will be less than, and elements after it
+                    // will be greater than the pivot.
 
-  quickSort(arr, low, i);
-  quickSort(arr, (i+2), high);
+  quickSort(arr, low, i); // recursively call on the less than side.
+  quickSort(arr, (i+2), high); // recursively call on the greater side.
 }
 
 
 // Multiway Merge Sort with multiple data streams from intermediate files
 void merge(char* myId, char** childIds, int depth, int nChild) {
-    int arr[1000];
-    int arrLen = 0;
+    int arr[1000]; // arr length of 1000 to account for maximum input data (1000).
+    int arrLen = 0; // variables that counts the length of used spots in arr
     for (int i=0; i < nChild; i++) {
         char path[MaxFileNameLength];
         strcpy(path, "output/");
         strcat(path, childIds[i]);
-        strcat(path, ".out");
+        strcat(path, ".out"); // path is now "output/[ID].out"
 
 
+        FILE* filePathPointer = getFilePointer(path); // pointer to path
 
-        FILE* filePathPointer = getFilePointer(path);
-
-        int integer;
+        int integer; //placeholder for integers scanned from path
         char *line = (char *)malloc(sizeof(char) * LineBufferSize);         // Line buffer where a new line is stored
         size_t len = LineBufferSize;
 
         ssize_t  nread;
-        nread = getLineFromFile(filePathPointer, line, len);
+        nread = getLineFromFile(filePathPointer, line, len); // get rid of first line (length of input, not our data).
         while ((nread = getLineFromFile(filePathPointer, line, len)) != -1) {
           sscanf(line, "%d \n", &integer);
 
+          // j will find the correct spot for the scanned in integer.
           int j = 0;
           while (integer > arr[j] && j < arrLen) {
             j+= 1;
@@ -193,6 +199,7 @@ void merge(char* myId, char** childIds, int depth, int nChild) {
           arrLen += 1;
         }
 
+        // free the line every iteration.
         free(line);
     }
 
@@ -202,4 +209,3 @@ void merge(char* myId, char** childIds, int depth, int nChild) {
     writeSortedResultToFile(myId, arr, arrLen);
     memset(arr, 0, 1000);
 }
-
