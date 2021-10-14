@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
                 sprintf(strStartIdx, "%d", startIdx);
                 sprintf(strEndIdx, "%d", endIdx);
                 sprintf(strNData, "%d", nData);
-                printf("Parent [%s] - Spawn Child [%s, %s, %s, %s, %s]\n", "master", "1", strId, strStartIdx, strEndIdx, strNData);
+                printf("Parent [%s] - Spawn Child [%s, %s, %s, %s, %s]\n", "master", "1", childIds[i], strStartIdx, strEndIdx, strNData);
 
                 if (execl(programPath, program, strDepth, childIds[i], strStartIdx, strEndIdx, strNData, inputFileName , NULL) == -1) {
                     fprintf(stderr, "ERROR: Failed to exec child program.");
